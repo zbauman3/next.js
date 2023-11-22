@@ -21,6 +21,7 @@ import {
 } from '../../lib/constants'
 import { hasNextSupport } from '../../telemetry/ci-info'
 import { lazyRenderAppPage } from '../../server/future/route-modules/app-page/module.render'
+import type { StaticGenerationContext } from '../../server/async-storage/static-generation-async-storage-wrapper'
 
 export const enum ExportedAppPageFiles {
   HTML = 'HTML',
@@ -71,7 +72,11 @@ async function generatePrefetchRsc(
 
   const prefetchRscData = await prefetchRenderResult.toUnchunkedString(true)
 
-  if ((renderOpts as any).store.staticPrefetchBailout) return false
+  if (
+    (renderOpts as StaticGenerationContext['renderOpts']).store
+      ?.staticPrefetchBailout
+  )
+    return false
 
   await fileWriter(
     ExportedAppPageFiles.FLIGHT,
@@ -145,7 +150,10 @@ export async function exportAppPage(
         )
       }
 
-      if (!(renderOpts as any).store.staticPrefetchBailout) {
+      if (
+        !(renderOpts as StaticGenerationContext['renderOpts']).store
+          ?.staticPrefetchBailout
+      ) {
         await generatePrefetchRsc(
           req,
           path,
