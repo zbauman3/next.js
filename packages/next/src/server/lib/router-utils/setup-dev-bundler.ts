@@ -560,6 +560,13 @@ async function startWatcher(opts: SetupOpts) {
     }
 
     function sendTurbopackMessage(payload: TurbopackUpdate) {
+      // @ts-ignore don't care if it doesn't exist according to typescript, should not be sent to the client.
+      delete payload.diagnostics
+      // TODO(PACK-2049): For some reason we end up emitting hundreds of issues messages on bigger apps,
+      //   a lot of which are duplicates.
+      //   They are currently not handled on the client at all, so might as well not send them for now.
+      payload.issues = []
+
       // We've detected a change in some part of the graph. If nothing has
       // been inserted into building yet, then this is the first change
       // emitted, but their may be many more coming.
