@@ -15,6 +15,7 @@ import { getDefineEnv } from '../webpack/plugins/define-env-plugin'
 import type { DefineEnvPluginOptions } from '../webpack/plugins/define-env-plugin'
 
 const nextVersion = process.env.__NEXT_VERSION as string
+const isYarnPnP = !!process?.versions?.pnp
 
 const ArchName = arch()
 const PlatformName = platform()
@@ -1111,9 +1112,6 @@ function warnInvalidValue(
   key: keyof typeof warnedInvalidValueMap,
   message: string
 ): void {
-  throw new Error(
-    `key ${key} message: ${message} pageFilePath: ${pageFilePath}`
-  )
   if (warnedInvalidValueMap[key].has(pageFilePath)) return
 
   Log.warn(
@@ -1191,6 +1189,16 @@ async function loadWasm(importPath = '') {
               }) => warnInvalidValue(pageFilePath, key, message)
             )
             return isDynamicMetadataRoute
+          },
+          getPageStaticInfo: async (params: Record<string, any>) => {
+            const fileContent =
+              (await tryToReadFile(params.pageFilePath, !params.isDev)) || ''
+
+            const raw = await bindings.getPageStaticInfo(
+              params.pageFilePath,
+              fileContent
+            )
+            return coercePageStaticInfo(params.pageFilePath, raw)
           },
         },
         getTargetTriple() {
@@ -1374,8 +1382,13 @@ function loadNative(importPath?: string) {
 
       analysis: {
         isDynamicMetadataRoute: async (pageFilePath: string) => {
+          let fileContent: string | undefined = undefined
+          if (isYarnPnP) {
+            fileContent = (await tryToReadFile(pageFilePath, true)) || ''
+          }
+
           const { isDynamicMetadataRoute, warnings } =
-            await bindings.isDynamicMetadataRoute(pageFilePath)
+            await bindings.isDynamicMetadataRoute(pageFilePath, fileContent)
 
           // Instead of passing js callback into napi's context, bindings bubble up the warning messages
           // and let next.js logger handles it.
@@ -1389,6 +1402,17 @@ function loadNative(importPath?: string) {
             }) => warnInvalidValue(pageFilePath, key, message)
           )
           return isDynamicMetadataRoute
+        },
+
+        getPageStaticInfo: async (params: Record<string, any>) => {
+          let fileContent: string | undefined = undefined
+          if (isYarnPnP) {
+            fileContent =
+              (await tryToReadFile(params.pageFilePath, !params.isDev)) || ''
+          }
+
+          const raw = await bindings.getPageStaticInfo(params, fileContent)
+          return coercePageStaticInfo(params.pageFilePath, raw)
         },
       },
 
@@ -1478,6 +1502,31 @@ function getMdxOptions(options: any = {}) {
 
 function toBuffer(t: any) {
   return Buffer.from(JSON.stringify(t))
+}
+
+function coercePageStaticInfo(pageFilePath: string, raw?: string) {
+  if (!raw) return raw
+
+  const parsed = JSON.parse(raw)
+
+  parsed?.exportsInfo?.warnings?.forEach(
+    ({
+      key,
+      message,
+    }: {
+      key: keyof typeof warnedInvalidValueMap
+      message: string
+    }) => warnInvalidValue(pageFilePath, key, message)
+  )
+
+  return {
+    ...parsed,
+    exportsInfo: {
+      ...parsed.exportsInfo,
+      directives: new Set(parsed?.exportsInfo?.directives ?? []),
+      extraProperties: new Set(parsed?.exportsInfo?.extraProperties ?? []),
+    },
+  }
 }
 
 export async function isWasm(): Promise<boolean> {
