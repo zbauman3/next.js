@@ -4,6 +4,7 @@
     "noEmit": true,
     "allowJs": true,
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "jsx": "react-jsx",
     "module": "esnext",
     "target": "ESNext",
@@ -19,12 +20,5 @@
       "e2e-utils": ["test/lib/e2e-utils"]
     }
   },
-  "include": [
-    "test/**/*.test.ts",
-    "test/**/*.test.tsx",
-    "test/**/test/*",
-    "packages/next/types/compiled.d.ts",
-    "test/e2e/pages-dir/client-navigation/index.test.js",
-    "test/e2e/pages-dir/client-navigation/rendering.js"
-  ]
+  "include": ["test/**/*.test.ts", "test/**/*.test.tsx", "test/**/test/*"]
 }
