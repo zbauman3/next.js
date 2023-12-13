@@ -65,7 +65,8 @@ export function refreshReducer(
           // TODO-APP: remove ''
           [''],
           currentTree,
-          treePatch
+          treePatch,
+          true
         )
 
         if (newTree === null) {
