@@ -11,7 +11,9 @@ use crate::{
     next_shared::transforms::{
         get_next_dynamic_transform_rule, get_next_font_transform_rule, get_next_image_rule,
         get_next_modularize_imports_rule, get_next_pages_transforms_rule,
-        get_server_actions_transform_rule, server_actions::ActionsTransform,
+        get_server_actions_transform_rule,
+        next_react_server_components::get_next_react_server_components_transform_rule,
+        server_actions::ActionsTransform,
     },
 };
 
@@ -77,6 +79,11 @@ pub async fn get_next_server_transforms_rules(
         get_next_dynamic_transform_rule(true, is_server_components, pages_dir, mode, mdx_rs)
             .await?,
     );
+
+    rules.push(get_next_react_server_components_transform_rule(
+        is_server_components,
+        mdx_rs,
+    ));
 
     rules.push(get_next_image_rule());
 
