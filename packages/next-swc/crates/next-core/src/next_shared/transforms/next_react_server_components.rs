@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use anyhow::Result;
 use async_trait::async_trait;
 use next_transform_react_server_components::{server_components, Config, Options};
@@ -50,7 +52,7 @@ impl CustomTransformer for NextJsReactServerComponents {
                 is_react_server_layer: self.is_react_server_layer,
             }),
             ctx.comments,
-            None,
+            Some(PathBuf::from(ctx.file_path.parent().await?.path.clone())),
         );
 
         *program = p.fold_with(&mut visitor);

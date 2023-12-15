@@ -331,7 +331,7 @@ describe('Error overlay - RSC build errors', () => {
     expect(
       next.normalizeTestDirContent(await session.getRedboxSource())
     ).toMatchInlineSnapshot(
-      next.normalizeSnapshot(`
+      `
       "./app/server-with-errors/error-file/error.js
       Error: 
         x TEST_DIR/app/server-with-errors/error-file/error.js must be a Client
@@ -339,14 +339,14 @@ describe('Error overlay - RSC build errors', () => {
         | Learn more: https://nextjs.org/docs/getting-started/react-essentials#client-components
         | 
         | 
-         ,-[1:1]
+         ,-[TEST_DIR/app/server-with-errors/error-file/error.js:1:1]
        1 | export default function Error() {}
          : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
          \`----
 
       Import trace for requested module:
       ./app/server-with-errors/error-file/error.js"
-    `)
+    `
     )
 
     await cleanup()

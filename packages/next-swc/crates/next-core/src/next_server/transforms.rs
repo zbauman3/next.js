@@ -62,6 +62,11 @@ pub async fn get_next_server_transforms_rules(
                 ActionsTransform::Server,
                 mdx_rs,
             ));
+
+            rules.push(get_next_react_server_components_transform_rule(
+                true, mdx_rs,
+            ));
+
             if let Some(client_transition) = client_transition {
                 rules.push(get_next_css_client_reference_transforms_rule(
                     client_transition,
@@ -79,11 +84,6 @@ pub async fn get_next_server_transforms_rules(
         get_next_dynamic_transform_rule(true, is_server_components, pages_dir, mode, mdx_rs)
             .await?,
     );
-
-    rules.push(get_next_react_server_components_transform_rule(
-        is_server_components,
-        mdx_rs,
-    ));
 
     rules.push(get_next_image_rule());
 
